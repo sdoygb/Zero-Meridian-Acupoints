@@ -29,7 +29,22 @@ The Zero framework describes a meridian as the set of **ports–channels–extre
 - **depth**: `d* = ST + SAT + t_f/2` — subcutaneous thickness + superficial adipose + half the fascia thickness (Zc013);
 - **acupoints**: a point is a port; a *special* point is a local extremum of φ along the channel; the 1D index theorem gives `#max − #min ∈ {−1, 0, 1}` (Zc011).
 
-The formal derivations are in the five articles at the repository root (`Zc011`–`Zc015`): ports and channels, the 361-point comparison, the interface depth theorem, acupoint positions as field extrema, and the three channels / seven chakras (max-clearance axis, equal-winding helices, chakra = field extremum along the axis).
+The formal derivations are in the five articles at the repository root — see **[Theory articles](#theory-articles)** below for the full list with links.
+
+
+## Theory articles
+
+The five derivations behind the atlas — formal statements, proofs and computation tables (Chinese text, as in the Zc series):
+
+| No. | Article | Content |
+|:--|:--|:--|
+| Zc011 | [经络与穴位：端口、通道与极值](https://github.com/sdoygb/Zero-Meridian-Acupoints/blob/main/Zc011_%E7%BB%8F%E7%BB%9C%E4%B8%8E%E7%A9%B4%E4%BD%8D_%E7%AB%AF%E5%8F%A3%E9%80%9A%E9%81%93%E4%B8%8E%E6%9E%81%E5%80%BC.md) | channel = variational extremum; point = boundary port; special point = φ extremum; 1D index theorem |
+| Zc012 | [经络与穴位的计算对照：361 穴、14 经、8 奇经](https://github.com/sdoygb/Zero-Meridian-Acupoints/blob/main/Zc012_%E7%BB%8F%E7%BB%9C%E4%B8%8E%E7%A9%B4%E4%BD%8D%E7%9A%84%E8%AE%A1%E7%AE%97%E5%AF%B9%E7%85%A7_361%E7%A9%B414%E7%BB%8F8%E5%A5%87%E7%BB%8F.md) | comparison with the traditional catalogue; counts are coarse-graining |
+| Zc013 | [经络的层深：界面判据与实测层厚](https://github.com/sdoygb/Zero-Meridian-Acupoints/blob/main/Zc013_%E7%BB%8F%E7%BB%9C%E7%9A%84%E5%B1%82%E6%B7%B1_%E7%95%8C%E9%9D%A2%E5%88%A4%E6%8D%AE%E4%B8%8E%E5%AE%9E%E6%B5%8B%E5%B1%82%E5%8E%9A.md) | interface theorem; d* = ST + SAT + t_f/2; measured layer thicknesses |
+| Zc014 | [穴位位置的推导：φ 极值与计数对照](https://github.com/sdoygb/Zero-Meridian-Acupoints/blob/main/Zc014_%E7%A9%B4%E4%BD%8D%E4%BD%8D%E7%BD%AE%E7%9A%84%E6%8E%A8%E5%AF%BC_%CF%86%E6%9E%81%E5%80%BC%E4%B8%8E%E8%AE%A1%E6%95%B0%E5%AF%B9%E7%85%A7.md) | 326 acupoints as field extrema; naming; comparison statistics |
+| Zc015 | [三脉七轮的推导：轴心通道与轮的判据](https://github.com/sdoygb/Zero-Meridian-Acupoints/blob/main/Zc015_%E4%B8%89%E8%84%89%E4%B8%83%E8%BD%AE%E7%9A%84%E6%8E%A8%E5%AF%BC_%E8%BD%B4%E5%BF%83%E9%80%9A%E9%81%93%E4%B8%8E%E8%BD%AE%E7%9A%84%E5%88%A4%E6%8D%AE.md) | max-clearance axis; equal-winding helices; chakra = φ extremum along the axis |
+
+The wider Zero series (causality, self, matter) lives in [sdoygb/Zero](https://github.com/sdoygb/Zero).
 
 ## Repository layout
 
