@@ -17,6 +17,7 @@ The page is a single self-contained HTML file (`index.html`, ~1.9 MB, no network
 | 8 extraordinary vessels | Ren, Du, Dai, Chong, Wei (yin/yang), Qiao (yin/yang) |
 | 3 channels, 7 chakras | central / left / right channel, 7 wheel rings along the axis |
 | **326 acupoints** | local extrema of the field φ along each channel (Zc014), labelled with approximate traditional names |
+| 3 channels / 7 chakras | central channel = max-clearance axis; left/right = equal-winding helices on the core shell; chakra = φ extremum along the axis (Zc015): 5 of 7 traditional wheels within 5 cm |
 | Depth | theorem value d\* = ST + SAT + t_f/2 (Zc013), 4.5–8.9 mm by body region |
 
 ## Theory in brief
@@ -28,7 +29,7 @@ The Zero framework describes a meridian as the set of **ports–channels–extre
 - **depth**: `d* = ST + SAT + t_f/2` — subcutaneous thickness + superficial adipose + half the fascia thickness (Zc013);
 - **acupoints**: a point is a port; a *special* point is a local extremum of φ along the channel; the 1D index theorem gives `#max − #min ∈ {−1, 0, 1}` (Zc011).
 
-The formal derivations are in the four articles at the repository root (`Zc011`–`Zc014`).
+The formal derivations are in the five articles at the repository root (`Zc011`–`Zc015`): ports and channels, the 361-point comparison, the interface depth theorem, acupoint positions as field extrema, and the three channels / seven chakras (max-clearance axis, equal-winding helices, chakra = field extremum along the axis).
 
 ## Repository layout
 
@@ -43,7 +44,7 @@ src/atlas2/                 # mesh loading, surface routing, stage 1–5, HTML b
 src/zc013/                  # layer model, theorem application, audit
 src/zc014/                  # φ fields, extremum extraction, naming
 src/zc015/                  # anchor construction, TARA extraction, registration
-Zc011–Zc014*.md             # theory articles
+Zc011–Zc015*.md             # theory articles
 ```
 
 ## Rebuild
