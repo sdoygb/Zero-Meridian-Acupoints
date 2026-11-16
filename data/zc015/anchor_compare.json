@@ -1,0 +1,72 @@
+[
+ {
+  "point": "PC6",
+  "mer": "PC",
+  "to_chan_cm": 1.4,
+  "to_acu_cm": 1.4,
+  "to_chart_cm": 4.3
+ },
+ {
+  "point": "LU9",
+  "mer": "LU",
+  "to_chan_cm": 2.1,
+  "to_acu_cm": 2.6,
+  "to_chart_cm": 7.8
+ },
+ {
+  "point": "HT7",
+  "mer": "HT",
+  "to_chan_cm": 2.9,
+  "to_acu_cm": 2.9,
+  "to_chart_cm": 7.9
+ },
+ {
+  "point": "LI4",
+  "mer": "LI",
+  "to_chan_cm": 1.0,
+  "to_acu_cm": 1.6,
+  "to_chart_cm": 4.8
+ },
+ {
+  "point": "LI11",
+  "mer": "LI",
+  "to_chan_cm": 1.0,
+  "to_acu_cm": 3.2,
+  "to_chart_cm": 8.9
+ },
+ {
+  "point": "ST36",
+  "mer": "ST",
+  "to_chan_cm": 3.6,
+  "to_acu_cm": 5.1,
+  "to_chart_cm": 4.0
+ },
+ {
+  "point": "SP6",
+  "mer": "SP",
+  "to_chan_cm": 2.7,
+  "to_acu_cm": 2.7,
+  "to_chart_cm": 5.1
+ },
+ {
+  "point": "GB34",
+  "mer": "GB",
+  "to_chan_cm": 0.6,
+  "to_acu_cm": 0.6,
+  "to_chart_cm": 15.9
+ },
+ {
+  "point": "GB39",
+  "mer": "GB",
+  "to_chan_cm": 1.8,
+  "to_acu_cm": 2.7,
+  "to_chart_cm": 9.6
+ },
+ {
+  "point": "KI3",
+  "mer": "KI",
+  "to_chan_cm": 3.6,
+  "to_acu_cm": 4.7,
+  "to_chart_cm": 12.6
+ }
+]

@@ -1,0 +1,33 @@
+{
+  "note": "Zc013 层厚数据（M）。单位 mm。来源见 provenance；部位分配与 w 为结构选择（I）。",
+  "skin_st_mm": {
+    "forehead": 1.84, "cheek": 1.92,
+    "forearm_flex": 1.13, "forearm_ext": 1.34,
+    "upper_arm_flex": 1.06, "upper_arm_ext": 1.48,
+    "medial_leg": 1.32, "lateral_leg": 1.38,
+    "flex_thigh": 1.21, "outer_thigh": 1.46,
+    "chest": 1.94, "back": 2.97, "abdomen": 1.69
+  },
+  "skin_st_derivation": "epidermis+dermis, HFUS 22/75 MHz, n=189 健康中国人（排除肥胖），13 部位；原文表 2 的 μm 值相加除以 1000",
+  "sat": {
+    "whole_body_mean_mm": 3.7,
+    "eight_site_mean_mm": 5.75,
+    "obese_anchor": {"sat_mm": 16.75, "bmi": 29.86, "site": "abdomen"},
+    "regional_factor": {"head_neck": 0.55, "trunk_front": 1.45, "trunk_back": 1.45, "upper_limb": 0.78, "lower_limb": 0.82},
+    "constraint": "区域因子为结构选择(I)；面积加权均值锚定实测全身均值 3.7 mm"
+  },
+  "fascia": {"t_mm": 0.8, "range_mm": [0.6, 1.0], "derivation": "brachial fascia 0.61–0.81 mm（超声，n=20+）；深筋膜 0.6–1.0 mm"},
+  "w": {
+    "skin": 0.0005, "fat": 0.030, "muscle": 0.35, "bone": 0.020,
+    "interface_skin_fat": 0.10,
+    "interface_fat_fascia": 0.80,
+    "interface_fascia_muscle": 0.35
+  },
+  "w_derivation": "量级取自低频组织电导率排序（皮≪脂<肌），界面权重是'界面自身'的权重（流体/疏松结缔组织层），为结构选择(I)，敏感性见 §6",
+  "provenance": [
+    {"use": "skin thickness by site", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9838783/", "ref": "Skin Res Technol 2022;29:e13219, Table 2"},
+    {"use": "whole-body SAT mean (normal weight, n=10, 216 sites)", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6214952/", "ref": "Sci Rep 2018;8:16268, Table 3 (d_IM216 mean 3.69 mm)"},
+    {"use": "SAT abdomen in overweight/obese (BMI 29.86)", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13616070/", "ref": "JAFES 2026;41(2):60-67, Table 3 (median 16.75 mm)"},
+    {"use": "fascia thickness", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8700752/", "ref": "brachial fascia 0.61±0.11 / 0.81±0.2 mm"}
+  ]
+}

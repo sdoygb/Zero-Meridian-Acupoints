@@ -1,0 +1,33 @@
+{
+  "note": "实测/专家给定的针刺深度锚（mm）。用于检验 Zc013 的 d*（通道层深）与临床针刺深度的关系。",
+  "expert_defined": {
+    "source": "Sensors 2025;25(22):6934, Table 1 (18 穴，3 位执业医师定义的安全/理想/最大深度)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12656300/",
+    "points": {
+      "TE3":  {"min": 5,  "ideal": 5.5,  "max": 10},
+      "TE5":  {"min": 10, "ideal": 12.5, "max": 20},
+      "LI4":  {"min": 10, "ideal": 12.5, "max": 20},
+      "LI10": {"min": 10, "ideal": 15,   "max": 30},
+      "LI11": {"min": 20, "ideal": 21.25,"max": 30},
+      "SP10": {"min": 20, "ideal": 21.25,"max": 30},
+      "ST34": {"min": 10, "ideal": 15,   "max": 20},
+      "GB33": {"min": 10, "ideal": 10,   "max": 20},
+      "ST35": {"min": 10, "ideal": 15,   "max": 20},
+      "LR8":  {"min": 20, "ideal": 21.25,"max": 30},
+      "SP9":  {"min": 20, "ideal": 21.25,"max": 30},
+      "GB34": {"min": 20, "ideal": 21.25,"max": 30},
+      "ST36": {"min": 20, "ideal": 21.25,"max": 30},
+      "GB39": {"min": 10, "ideal": 11,   "max": 20},
+      "LR3":  {"min": 5,  "ideal": 6,    "max": 12},
+      "GB41": {"min": 5,  "ideal": 6,    "max": 12}
+    }
+  },
+  "ultrasound_measured": {
+    "source": "BMC Complement Med Ther 2025;26:38（超声，n=39，健康年轻人）GB21/ST36 的 deqi 目标深度与危险深度",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12860045/",
+    "points": {
+      "GB21": {"target_cm": 2.6, "hazard_cm": 3.8},
+      "ST36": {"target_cm": 2.2, "hazard_cm": 2.4}
+    }
+  }
+}
