@@ -20,6 +20,10 @@ D5 = json.load(open(OUT / 'depth_paths.json'))
 ZC = json.load(open(ROOT / 'data' / 'zc013' / 'depth_theorem.json'))
 THM = json.load(open(OUT / 'theorem_atlas.json'))
 try:
+    DYN = json.load(open(ROOT / 'data' / 'zc021' / 'web_dynamics.json'))
+except Exception:
+    DYN = {}
+try:
     ACU = json.load(open(ROOT / 'data' / 'zc014' / 'acupoints_derived.json'))
 except Exception:
     ACU = {'meridians': {}}
@@ -86,7 +90,8 @@ def main():
                 acu={k: v['pts'] for k, v in ACU.get('meridians', {}).items()},
                 acu_frac={k: v.get('frac', []) for k, v in ACU.get('meridians', {}).items()},
                 acu_names=ACU_NAMES,
-                acu_total=ACU.get('total', 0))
+                acu_total=ACU.get('total', 0),
+                dyn=DYN)
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
 
     html = TEMPLATE.replace('__THREE__', THREE).replace('__ORBIT__', ORBIT).replace('__DATA__', blob)
@@ -163,6 +168,23 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
 .ext:hover{background:rgba(40,70,110,.45)}
 #hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);color:#63748f;font-size:11.5px;z-index:5}
 #title{position:fixed;right:14px;bottom:12px;color:#55637a;font-size:11px;text-align:right;z-index:5}
+#right{position:fixed;right:14px;top:14px;bottom:34px;width:286px;display:flex;flex-direction:column;gap:8px;z-index:5;pointer-events:none}
+#dynui{pointer-events:auto;background:rgba(12,18,32,.86);border:1px solid rgba(110,160,255,.2);
+  border-radius:12px;padding:10px 12px;max-height:60vh;overflow:auto;font-size:11.5px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(8px)}
+#right #legend{position:static;width:auto;max-height:36vh;flex:1 1 auto;min-height:0;pointer-events:auto}
+.dynhead{color:#e8f0ff;font-weight:600;font-size:12.5px;margin-bottom:4px}
+.dynhead .dynbadge{float:right;color:#7f8ea8;font-size:10px;border:1px solid rgba(110,160,255,.2);
+  border-radius:6px;padding:0 5px}
+.dynrow{display:flex;align-items:center;gap:6px;margin:5px 0}
+.dynrow span{color:#8497b5;font-size:10.5px;min-width:32px}
+.dynrow select{flex:1;background:rgba(20,32,55,.9);color:#cfe0ff;border:1px solid rgba(110,160,255,.22);
+  border-radius:6px;font-size:10.5px;padding:2px 4px}
+.dynline{color:#9fb0c8;font-size:10.5px;line-height:1.5}
+.dynline b{color:#ffd166;font-weight:600}
+.dynlist{margin-top:5px;color:#8497b5;font-size:10px;line-height:1.45;max-height:20vh;overflow:auto}
+.dynlist b{color:#dfe7f3}
+.dynlist i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
 </style></head><body>
 <div id="app"></div>
 <div id="ui">
@@ -211,7 +233,33 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
   <div class="btns"><button id="rot">自动旋转：关</button></div>
   <a class="ext" style="margin-top:6px" href="https://github.com/sdoygb/Zero-Meridian-Acupoints#theory-articles" target="_blank" rel="noopener">理论文章 · Theory</a>
 </div>
-<div id="legend"></div>
+<div id="right">
+  <div id="dynui">
+    <div class="dynhead">动力学 · 调济/互补 <span class="dynbadge" id="dynbadge">关</span></div>
+    <label class="row"><input id="dynon" type="checkbox"> 显示动力学</label>
+    <div class="dynrow"><span>界面</span><select id="dynmode">
+      <option value="asym">不对称（通差模）</option>
+      <option value="sym">对称（只通共模）</option>
+    </select></div>
+    <div class="dynrow"><span>扰动</span><select id="dyncase">
+      <option value="H_to_V">横向 ST→SP（H→V）</option>
+      <option value="V_Caxis">纵向 中央轴 C→C（V→H）</option>
+      <option value="V_LC">纵向 左→中 L→C（V→H）</option>
+      <option value="V_LR">纵向 左右差 L→R（V→H）</option>
+    </select></div>
+    <div class="slider"><span>界面电导 g⊥ <b id="dgval">1.0</b></span><input id="dg" type="range" min="0" max="10" step="0.1" value="1"></div>
+    <label class="row"><input id="dynlinks" type="checkbox" checked> 显示界面线</label>
+    <div class="scbox">
+      <div class="dynline">cross / within <b id="dynratio">--</b></div>
+      <div class="dynline">零和误差 <b id="dynzero">--</b></div>
+      <div id="dynsrc" class="scrange">--</div>
+    </div>
+    <div class="btns"><button id="dynplay">暂停脉冲</button><button id="dynreset">复位</button></div>
+    <div id="dyntop" class="dynlist"></div>
+    <div class="scnote">红=正，蓝=负；亮度/宽度=|u|；界面线=g⊥ 的缝；开启时隐藏十二时辰光点</div>
+  </div>
+  <div id="legend"></div>
+</div>
 <div id="hint">拖动旋转 · 滚轮缩放 · 右键/双指/方向键/⌘+拖动平移</div>
 <div id="title">Zero 理论生成 · 非解剖测量</div>
 <script>__THREE__</script>
@@ -265,7 +313,7 @@ const bodyIn = new THREE.Mesh(body.geometry, new THREE.MeshBasicMaterial({
 scene.add(bodyIn);
 
 // ---------- curves
-const groups = {m12:new THREE.Group(), flow:new THREE.Group(), qi:new THREE.Group(), ves:new THREE.Group(), cha:new THREE.Group(), lab:new THREE.Group(), deep:new THREE.Group(), thm:new THREE.Group(), vox:new THREE.Group(), surf:new THREE.Group(), acu:new THREE.Group(), labAcu:new THREE.Group()};
+const groups = {m12:new THREE.Group(), flow:new THREE.Group(), qi:new THREE.Group(), dyn:new THREE.Group(), ves:new THREE.Group(), cha:new THREE.Group(), lab:new THREE.Group(), deep:new THREE.Group(), thm:new THREE.Group(), vox:new THREE.Group(), surf:new THREE.Group(), acu:new THREE.Group(), labAcu:new THREE.Group()};
 Object.values(groups).forEach(g=>scene.add(g));
 groups.thm.visible=false; groups.vox.visible=false; groups.surf.visible=false;
 const allTubes = [];
@@ -296,6 +344,7 @@ function tube(pts, color, radius, opts){
   const mesh = new THREE.Mesh(geo, mat);
   mesh.userData.baseRadius = radius;
   mesh.userData.kind = opts.kind||'tube';
+  mesh.userData.baseColor = new THREE.Color(color);
   return mesh;
 }
 function addCurve(pts, color, radius, opts){
@@ -307,6 +356,7 @@ function addCurve(pts, color, radius, opts){
       opacity:0.05, kind:'halo'});
     h.material.blending = THREE.AdditiveBlending; h.material.depthWrite = false;
     grp.add(h); allTubes.push(h);
+    t.userData.halo = h;
   }
   return t;
 }
@@ -316,7 +366,7 @@ const merCurves = [];
 D.meridians.forEach(m=>{
   ['right','left'].forEach(side=>{
     const t = addCurve(m[side], m.color, 0.030, {group:groups.m12});
-    merCurves.push({mesh:t, pts:m[side], color:m.color});
+    merCurves.push({mesh:t, pts:m[side], color:m.color, code:m.code});
   });
 });
 // 深筋膜层（v19 遗留，仅 v19 构建）
@@ -408,27 +458,35 @@ D.transitions.forEach(t=>{
   });
 });
 // 奇经八脉
+const vesCurves = [];
 D.vessels.forEach(v=>{
   const MID = (v.code==='REN'||v.code==='DU'||v.code==='CHONG');
   (MID?['right']:['right','left']).forEach(side=>{
     const pts = v.closed ? v[side].concat([v[side][0]]) : v[side];
+    let t;
     if (v.code==='REN' || v.code==='DU'){
-      addCurve(pts, v.color, 0.040, {group:groups.ves, glow:0.85});
+      t = addCurve(pts, v.color, 0.040, {group:groups.ves, glow:0.85});
     } else if (v.code==='CHONG'){
-      addCurve(pts, v.color, 0.022, {group:groups.ves, glow:0.7, opacity:0.95});
+      t = addCurve(pts, v.color, 0.022, {group:groups.ves, glow:0.7, opacity:0.95});
     } else {
-      addCurve(pts, v.color, 0.026, {group:groups.ves, glow:0.6});
+      t = addCurve(pts, v.color, 0.026, {group:groups.ves, glow:0.6});
     }
+    vesCurves.push({mesh:t, pts, color:v.color, code:v.code, side});
   });
 });
 // 三轮
+const chaCurves = [];
 D.channels.forEach(c=>{
   const r = c.code==='SUSHUMA'?0.028:0.016;
   const MID = (c.code==='SUSHUMA');
-  (MID?['right']:['right','left']).forEach(side=>addCurve(c[side], c.color, r, {group:groups.cha, glow:0.9}));
+  (MID?['right']:['right','left']).forEach(side=>{
+    const t = addCurve(c[side], c.color, r, {group:groups.cha, glow:0.9});
+    chaCurves.push({mesh:t, pts:c[side], color:c.color, code:c.code, side});
+  });
 });
 // 七轮
 const chakraMats = [];
+const chakraRings = [];
 function glowSprite(color, size){
   const s = 128, cv = document.createElement('canvas'); cv.width=cv.height=s;
   const ctx = cv.getContext('2d');
@@ -448,9 +506,221 @@ D.chakras.forEach(c=>{
   const ring = new THREE.Mesh(geo, mat);
   ring.rotation.x = Math.PI/2; ring.position.set(0, c.y, c.z);
   groups.cha.add(ring); chakraMats.push(mat);
+  chakraRings.push({mesh:ring, mat, y:c.y, z:c.z, name:c.name, baseColor:0xffd166});
   const s = glowSprite('rgba(255,196,80,0.85)', c.rr*3.2);
   s.position.set(0, c.y, c.z); groups.cha.add(s);
 });
+
+// ---------- dynamics overlay
+const DYN = D.dyn || null;
+const dynBeads = [];
+const dynHGlows = {};
+const dynLinks = {sym: [], asym: []};
+const dynNodeName = {};
+D.meridians.forEach(m=>{ dynNodeName[m.code] = m.name; });
+D.vessels.forEach(v=>{ dynNodeName[v.code] = v.name; });
+let dynSrcGlow = null, dynSinkGlow = null;
+if (DYN) {
+  const beadGeo = new THREE.SphereGeometry(0.070, 10, 10);
+  ['L','C','R'].forEach(side=>{
+    for (let k=0;k<DYN.chakras.length;k++){
+      const p = DYN.v_points[side][k];
+      const mat = new THREE.MeshBasicMaterial({color:0x9fb3d1, transparent:true, opacity:0.9,
+        blending:THREE.AdditiveBlending, depthWrite:false});
+      const g = new THREE.Group();
+      g.add(new THREE.Mesh(beadGeo, mat));
+      const halo = glowSprite('rgba(255,255,255,0.9)', 0.34);
+      halo.material.opacity = 0.35; g.add(halo);
+      g.position.set(p[0], p[1], p[2]); g.visible = false;
+      groups.dyn.add(g);
+      dynBeads.push({side, k, group:g, mat, halo});
+    }
+  });
+  Object.keys(DYN.h_points).forEach(code=>{
+    const p = DYN.h_points[code];
+    const spR = glowSprite('rgba(255,255,255,0.9)', 0.30);
+    spR.position.set(p[0], p[1], p[2]); spR.visible = false;
+    const spL = glowSprite('rgba(255,255,255,0.9)', 0.30);
+    spL.position.set(-p[0], p[1], p[2]); spL.visible = false;
+    groups.dyn.add(spR); groups.dyn.add(spL);
+    dynHGlows[code] = [spR, spL];
+  });
+  ['sym','asym'].forEach(mode=>{
+    DYN.links[mode].forEach(L=>{
+      const p0 = new THREE.Vector3(L.p0[0], L.p0[1], L.p0[2]);
+      const p1 = new THREE.Vector3(L.p1[0], L.p1[1], L.p1[2]);
+      const geo = new THREE.TubeGeometry(new THREE.LineCurve3(p0, p1), 2, 0.018, 6, false);
+      const mat = new THREE.MeshBasicMaterial({color:0x8fb7ff, transparent:true,
+        opacity:0, blending:THREE.AdditiveBlending, depthWrite:false, depthTest:false});
+      const line = new THREE.Mesh(geo, mat);
+      line.renderOrder = 20;
+      line.userData = {k:L.k, side:L.side, h:L.h, mode, baseOpacity:0};
+      line.visible = false;
+      groups.dyn.add(line);
+      dynLinks[mode].push(line);
+    });
+  });
+  dynSrcGlow = glowSprite('rgba(120,255,170,0.9)', 0.55);
+  dynSinkGlow = glowSprite('rgba(255,150,90,0.9)', 0.55);
+  dynSrcGlow.visible = false; dynSinkGlow.visible = false;
+  dynSrcGlow.material.depthTest = false; dynSinkGlow.material.depthTest = false;
+  dynSrcGlow.renderOrder = 21; dynSinkGlow.renderOrder = 21;
+  groups.dyn.add(dynSrcGlow); groups.dyn.add(dynSinkGlow);
+}
+groups.dyn.visible = false;
+
+const dynState = {on:false, mode:'asym', case:'H_to_V', g:1.0, links:true, playing:true, current:null};
+
+function dynInterp(g, mode, caseName){
+  if (!DYN) return null;
+  const gs = DYN.g_list;
+  let lo = gs[0], hi = gs[gs.length-1];
+  for (let i=0;i<gs.length-1;i++){
+    if (g >= gs[i] && g <= gs[i+1]) { lo = gs[i]; hi = gs[i+1]; break; }
+  }
+  if (g <= gs[0]) { lo = hi = gs[0]; }
+  if (g >= gs[gs.length-1]) { lo = hi = gs[gs.length-1]; }
+  const a = DYN.responses[mode][String(lo)][caseName];
+  const b = DYN.responses[mode][String(hi)][caseName];
+  const t = hi === lo ? 0 : (g - lo) / (hi - lo);
+  const lerp = (x,y)=>x + (y-x)*t;
+  const uH = a.uH.map((v,i)=>lerp(v, b.uH[i]));
+  const uV = a.uV.map((v,i)=>lerp(v, b.uV[i]));
+  const rawH = Math.max(...uH.map(Math.abs));
+  const rawV = Math.max(...uV.map(Math.abs));
+  const scaleH = rawH < 1e-12 ? 1.0 : rawH;
+  const scaleV = rawV < 1e-12 ? 1.0 : rawV;
+  return {uH, uV, rawH, rawV, scaleH, scaleV, ratio:lerp(a.ratio,b.ratio), zero:lerp(a.zero,b.zero)};
+}
+
+const DYN_RED = new THREE.Color(0xff5a5a);
+const DYN_BLUE = new THREE.Color(0x4aa8ff);
+function dynColor(v, base){
+  const k = Math.min(1, Math.abs(v));
+  return base.clone().lerp(v >= 0 ? DYN_RED : DYN_BLUE, 0.92*k);
+}
+
+function dynRestore(){
+  [...merCurves, ...vesCurves].forEach(o=>{
+    const base = o.mesh.userData.baseColor || new THREE.Color(o.color);
+    o.mesh.material.color.copy(base);
+    const halo = o.mesh.userData.halo;
+    if (halo){ halo.material.color.copy(base); halo.material.opacity = 0.05; }
+  });
+  chakraRings.forEach(r=>{ r.mat.color.setHex(0xffd166); r.mat.opacity = 0.95; });
+  dynBeads.forEach(b=>{ b.group.visible = false; });
+  Object.values(dynHGlows).flat().forEach(sp=>{ sp.visible = false; });
+  ['sym','asym'].forEach(m=>dynLinks[m].forEach(l=>{ l.visible = false; }));
+  if (dynSrcGlow) dynSrcGlow.visible = false;
+  if (dynSinkGlow) dynSinkGlow.visible = false;
+}
+
+function dynUpdate(){
+  if (!DYN) return;
+  const badge = document.getElementById('dynbadge');
+  if (!dynState.on){
+    dynRestore();
+    groups.dyn.visible = false;
+    if (badge) badge.textContent = '关';
+    const rr = document.getElementById('dynratio'); if (rr) rr.textContent = '--';
+    const zz = document.getElementById('dynzero'); if (zz) zz.textContent = '--';
+    const sc = document.getElementById('dynsrc'); if (sc) sc.textContent = '--';
+    const tp = document.getElementById('dyntop'); if (tp) tp.innerHTML = '';
+    return;
+  }
+  groups.dyn.visible = true;
+  if (badge) badge.textContent = '开';
+  const cur = dynInterp(dynState.g, dynState.mode, dynState.case);
+  if (!cur) return;
+  dynState.current = cur;
+  const hVal = {};
+  DYN.h_order.forEach((name,i)=>{ hVal[DYN.h_codes[name]] = cur.uH[i] / cur.scaleH; });
+  const vVal = {L:[], C:[], R:[]};
+  ['L','C','R'].forEach((s,si)=>{
+    for (let k=0;k<DYN.chakras.length;k++) vVal[s][k] = cur.uV[si*DYN.chakras.length + k] / cur.scaleV;
+  });
+
+  [...merCurves, ...vesCurves].forEach(o=>{
+    const v = hVal[o.code] || 0;
+    const base = o.mesh.userData.baseColor || new THREE.Color(o.color);
+    o.mesh.material.color.copy(dynColor(v, base));
+    const halo = o.mesh.userData.halo;
+    if (halo){
+      halo.material.color.copy(dynColor(v, base));
+      halo.material.opacity = 0.05 + 0.28*Math.min(1, Math.abs(v));
+    }
+  });
+  Object.keys(dynHGlows).forEach(code=>{
+    const v = hVal[code] || 0;
+    const av = Math.abs(v);
+    dynHGlows[code].forEach(sp=>{
+      sp.visible = av > 0.18;
+      sp.material.color.copy(dynColor(v, new THREE.Color(0xffffff)));
+      sp.material.opacity = 0.10 + 0.60*Math.min(1, av);
+      sp.scale.setScalar(0.18 + 0.38*Math.min(1, av));
+    });
+  });
+  dynBeads.forEach(b=>{
+    const v = vVal[b.side][b.k];
+    b.group.visible = true;
+    b.mat.color.copy(dynColor(v, new THREE.Color(0x9fb3d1)));
+    b.mat.opacity = 0.55 + 0.45*Math.min(1, Math.abs(v));
+    b.halo.material.opacity = 0.22 + 0.55*Math.min(1, Math.abs(v));
+    b.group.scale.setScalar(0.8 + 0.6*Math.min(1, Math.abs(v)));
+  });
+  chakraRings.forEach((r,k)=>{
+    const mean = (vVal.L[k] + vVal.C[k] + vVal.R[k]) / 3;
+    r.mat.color.copy(dynColor(mean, new THREE.Color(0xffd166)));
+    r.mat.opacity = 0.62 + 0.38*Math.min(1, Math.abs(mean));
+  });
+  ['sym','asym'].forEach(m=>dynLinks[m].forEach(l=>{ l.visible = false; }));
+  if (dynState.g > 0.001 && dynState.links){
+    const netK = {};
+    dynLinks[dynState.mode].forEach(line=>{
+      const L = line.userData;
+      const flow = (vVal[L.side][L.k] || 0) - (hVal[L.h] || 0);
+      netK[L.k] = (netK[L.k] || 0) + flow;
+    });
+    dynLinks[dynState.mode].forEach(line=>{
+      const L = line.userData;
+      const f = Math.tanh(dynState.g * (netK[L.k] || 0) * 4.0);
+      line.material.color.copy(dynColor(f, new THREE.Color(0x8fb7ff)));
+      line.userData.baseOpacity = 0.12 + 0.70*Math.abs(f);
+      line.material.opacity = line.userData.baseOpacity;
+      line.visible = Math.abs(f) > 1e-6;
+    });
+  }
+  const C = DYN.cases[dynState.case];
+  if (dynSrcGlow && C){
+    dynSrcGlow.position.set(C.src[0], C.src[1], C.src[2]);
+    dynSinkGlow.position.set(C.sink[0], C.sink[1], C.sink[2]);
+    dynSrcGlow.visible = true; dynSinkGlow.visible = true;
+    dynSrcGlow.scale.setScalar(0.55); dynSinkGlow.scale.setScalar(0.55);
+  }
+  const rr = document.getElementById('dynratio'); if (rr) rr.textContent = cur.ratio.toFixed(3);
+  const zz = document.getElementById('dynzero'); if (zz) zz.textContent = cur.zero.toExponential(1);
+  const sc = document.getElementById('dynsrc'); if (sc) sc.textContent = (C ? C.src_label+' → '+C.sink_label : '')+' · g⊥='+dynState.g.toFixed(1);
+  const tp = document.getElementById('dyntop');
+  if (tp){
+    if (cur.rawH < 1e-12 && cur.rawV < 1e-12){
+      tp.innerHTML = '<b>无响应</b><br>' + (dynState.g <= 0.001 ? 'g⊥=0：两套分开' : '源汇为零');
+    } else if (cur.rawH < 1e-12){
+      tp.innerHTML = '<b>H 无交叉响应</b><br>' + (dynState.g <= 0.001 ? 'g⊥=0：两套分开' : '对称界面：差模被挡住') + '<br><span style="color:#62738f">V 层内仍有差模</span>';
+    } else {
+      const hs = Object.keys(hVal).map(code=>({code, v:hVal[code], name:dynNodeName[code]||code}))
+        .sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,3);
+      const vs = [];
+      ['L','C','R'].forEach(s=>{
+        for (let k=0;k<DYN.chakras.length;k++) vs.push({s, k, v:vVal[s][k], name:DYN.chakras[k].name});
+      });
+      vs.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+      let html = '<b>响应前 5</b><br>';
+      hs.forEach(x=>{ html += `<div><i style="background:${x.v>=0?'#ff5a5a':'#4aa8ff'}"></i>${x.name} ${x.v>=0?'+':''}${x.v.toFixed(2)}</div>`; });
+      vs.slice(0,2).forEach(x=>{ html += `<div><i style="background:${x.v>=0?'#ff5a5a':'#4aa8ff'}"></i>${x.s} ${x.name} ${x.v>=0?'+':''}${x.v.toFixed(2)}</div>`; });
+      tp.innerHTML = html;
+    }
+  }
+}
 
 // ---------- labels
 function label(text, color, pos, size){
@@ -640,6 +910,34 @@ const _phase = cb('phase'); if (_phase) _phase.oninput = e=>{
   const pv = cb('phval'); if (pv) pv.textContent = phaseShift.toFixed(1)+' h';
   updateShichenUI(currentShichen());
 };
+const _dynon = cb('dynon'); if (_dynon) _dynon.onchange = e=>{
+  dynState.on = e.target.checked;
+  groups.dyn.visible = dynState.on;
+  dynUpdate();
+};
+const _dynmode = cb('dynmode'); if (_dynmode) _dynmode.onchange = e=>{ dynState.mode = e.target.value; dynUpdate(); };
+const _dyncase = cb('dyncase'); if (_dyncase) _dyncase.onchange = e=>{ dynState.case = e.target.value; dynUpdate(); };
+const _dg = cb('dg'); if (_dg) _dg.oninput = e=>{
+  dynState.g = +e.target.value;
+  const gv = cb('dgval'); if (gv) gv.textContent = dynState.g.toFixed(1);
+  dynUpdate();
+};
+const _dynlinks = cb('dynlinks'); if (_dynlinks) _dynlinks.onchange = e=>{ dynState.links = e.target.checked; dynUpdate(); };
+const _dynplay = cb('dynplay'); if (_dynplay) _dynplay.onclick = ()=>{
+  dynState.playing = !dynState.playing;
+  _dynplay.textContent = dynState.playing ? '暂停脉冲' : '播放脉冲';
+};
+const _dynreset = cb('dynreset'); if (_dynreset) _dynreset.onclick = ()=>{
+  dynState.on = false; dynState.mode = 'asym'; dynState.case = 'H_to_V'; dynState.g = 1.0; dynState.links = true; dynState.playing = true;
+  const on = cb('dynon'); if (on) on.checked = false;
+  const mode = cb('dynmode'); if (mode) mode.value = 'asym';
+  const cs = cb('dyncase'); if (cs) cs.value = 'H_to_V';
+  const dg = cb('dg'); if (dg) dg.value = 1;
+  const dl = cb('dynlinks'); if (dl) dl.checked = true;
+  const gv = cb('dgval'); if (gv) gv.textContent = '1.0';
+  const pb = cb('dynplay'); if (pb) pb.textContent = '暂停脉冲';
+  dynUpdate();
+};
 const _asize = cb('asize'); if (_asize) _asize.oninput = e=>{
   const k = +e.target.value/100;
   acuMeshes.forEach(m=>m.scale.setScalar(k));
@@ -730,9 +1028,9 @@ function animate(t){
   groups.labAcu.visible = labAcuOn && camera.position.distanceTo(controls.target) < 42;
   const sc = currentShichen();
   updateShichenUI(sc);
-  groups.qi.visible = scOn;
+  groups.qi.visible = scOn && !dynState.on;
   qiDots.forEach(d=>{
-    const on = scOn && d.code === sc.sc.code;
+    const on = scOn && !dynState.on && d.code === sc.sc.code;
     d.group.visible = on;
     if (on){
       d.group.position.copy(d.curve.getPointAt(sc.frac));
@@ -741,7 +1039,15 @@ function animate(t){
     }
   });
   body.material.opacity = groups.m12.visible ? body.material.opacity : body.material.opacity;
-  chakraMats.forEach((m,i)=>{ m.opacity = 0.72 + 0.26*Math.sin(t/650 + i); });
+  if (!dynState.on) chakraMats.forEach((m,i)=>{ m.opacity = 0.72 + 0.26*Math.sin(t/650 + i); });
+  if (dynState.on && dynState.playing){
+    dynBeads.forEach(b=>{ if (b.group.visible) b.group.scale.setScalar(0.9 + 0.12*Math.sin(t/260 + b.k)); });
+    dynLinks[dynState.mode].forEach((line,i)=>{
+      if (line.visible) line.material.opacity = (line.userData.baseOpacity || 0.3) * (0.75 + 0.25*Math.sin(t/300 + i));
+    });
+    if (dynSrcGlow && dynSrcGlow.visible) dynSrcGlow.scale.setScalar(0.5 + 0.08*Math.sin(t/200));
+    if (dynSinkGlow && dynSinkGlow.visible) dynSinkGlow.scale.setScalar(0.5 + 0.08*Math.sin(t/220));
+  }
   renderer.render(scene, camera);
   }catch(e){ if(!window.__err){window.__err=1; console.error('ANIM '+e.stack);} }
 }
@@ -758,6 +1064,21 @@ try{
     const pv=cb('phval'); if(pv) pv.textContent=v.toFixed(1)+' h';
   } }
   if (q.get('ts')){ const tm=Date.parse(q.get('ts')); if(!isNaN(tm)) fixedMs=tm; }
+  if (q.get('dyn')==='1'){
+    dynState.on = true;
+    if (q.get('dynmode')==='sym' || q.get('dynmode')==='asym') dynState.mode = q.get('dynmode');
+    if (DYN && DYN.cases[q.get('dyncase')]) dynState.case = q.get('dyncase');
+    if (q.get('dg')) dynState.g = Math.max(0, Math.min(10, +q.get('dg')));
+    if (q.get('dynlinks')==='0') dynState.links = false;
+    const on = cb('dynon'); if (on) on.checked = true;
+    const mode = cb('dynmode'); if (mode) mode.value = dynState.mode;
+    const cs = cb('dyncase'); if (cs) cs.value = dynState.case;
+    const dg = cb('dg'); if (dg) dg.value = dynState.g;
+    const gv = cb('dgval'); if (gv) gv.textContent = dynState.g.toFixed(1);
+    const dl = cb('dynlinks'); if (dl) dl.checked = dynState.links;
+    groups.dyn.visible = true;
+    dynUpdate();
+  }
 
   if (q.get('onlydeep')==='1'){ cb('t12').checked=false; groups.m12.visible=false; }
   if (q.get('panx')||q.get('pany')){ panBy(+(q.get('panx')||0), +(q.get('pany')||0)); }
