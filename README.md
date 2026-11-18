@@ -8,7 +8,7 @@ A 3D meridian and acupoint atlas **computed from the Zero framework** on a neutr
 
 The page is a single self-contained HTML file (`index.html`, ~1.9 MB, no network needed). Drag to rotate, scroll to zoom, right-drag to pan; the left panel toggles layers.
 
-The left panel includes a **十二时辰** switch: the active meridian's two glowing dots move from its start to its end over its 2-hour window, with a live 时辰 / clock / progress display (real time; optional 600× demo).
+The left panel includes a **十二时辰** switch: the active meridian's two glowing dots move from its start to its end over its 2-hour window, with a live 时辰 / clock / progress display (real time; optional 600× demo). A **作息相位 δ** slider (0–6 h) shifts the natural 酉 anchor: 0 = natural light (酉 17–19), 3–6 h = modern schedule (酉 20–01); at δ=4.5 the clock 22:30 shows the biological 酉/kidney dot.
 
 ## What it shows
 
@@ -17,6 +17,7 @@ The left panel includes a **十二时辰** switch: the active meridian's two glo
 | 12 primary meridians | port-to-port surface geodesics, then lowered to the computed channel depth |
 | 流注 transitions | 8 limb/head transitions + 3 deep transitions, at the same depth |
 | 十二时辰 | strict 2 h per meridian (子胆 … 亥三焦); one active meridian pair; live clock in the side panel |
+| 作息相位 δ | 0–6 h phase-anchor shift; 0 = natural light, 3–6 h = modern schedule; δ=4.5 puts 酉 at 22:30 |
 | 8 extraordinary vessels | Ren, Du, Dai, Chong, Wei (yin/yang), Qiao (yin/yang) |
 | 3 channels, 7 chakras | central / left / right channel, 7 wheel rings along the axis |
 | **319 acupoints** | local extrema of the field φ along each channel (Zc014), labelled with approximate traditional names |

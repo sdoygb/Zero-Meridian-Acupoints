@@ -80,6 +80,8 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
       <button id="scnowbtn">回到现在</button>
       <label class="row"><input id="tdemo" type="checkbox"> 演示 ×600</label>
     </div>
+    <div class="slider"><span>作息相位 δ <b id="phval">0.0 h</b></span><input id="phase" type="range" min="0" max="6" step="0.5" value="0"></div>
+    <div class="scnote">0＝自然光锚（酉 17–19）；3–6 h＝现代作息（酉推到 20–01）</div>
   </div>
   <div class="slider"><span>穴位大小</span><input id="asize" type="range" min="30" max="300" value="100"></div>
   <div class="slider"><span>身体透明度</span><input id="ob" type="range" min="4" max="60" value="20"></div>
@@ -1483,10 +1485,13 @@ function shichenAt(ms){
   return {idx, sc:SHICHEN[idx], frac, h, date:d};
 }
 let scOn = true;
+let phaseShift = 0.0;
 let demoOn = false;
+let fixedMs = null;
 const DEMO_SPEED = 600;
 let demoReal0 = 0, demoSim0 = 0;
 function simNow(){
+  if (fixedMs !== null) return fixedMs;
   if (!demoOn) return Date.now();
   return demoSim0 + (performance.now() - demoReal0) * DEMO_SPEED;
 }
@@ -1494,15 +1499,20 @@ function resetDemoBase(){
   demoReal0 = performance.now();
   demoSim0 = Date.now();
 }
+function currentShichen(){
+  // 相位推迟 δ：生物相位 = 时钟时间 − δ
+  return shichenAt(simNow() - phaseShift * 3600 * 1000);
+}
 function fmtClock(d){
   const p = n=>String(n).padStart(2,'0');
   return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
 }
 let scLastKey = '';
 function updateShichenUI(sc){
+  const clockDate = new Date(simNow());
   const pct = Math.round(sc.frac*100);
-  const tag = demoOn ? ('演示 ×'+DEMO_SPEED) : '实时';
-  const key = sc.sc.name+'|'+pct+'|'+tag+'|'+scOn+'|'+fmtClock(sc.date);
+  const tag = fixedMs !== null ? '固定' : (demoOn ? ('演示 ×'+DEMO_SPEED) : '实时');
+  const key = sc.sc.name+'|'+pct+'|'+tag+'|'+scOn+'|'+phaseShift.toFixed(1)+'|'+fmtClock(clockDate);
   if (key === scLastKey) return;
   scLastKey = key;
   const nm = document.getElementById('scname');
@@ -1517,8 +1527,8 @@ function updateShichenUI(sc){
   const m = codeToMer[sc.sc.code];
   const css = m ? m.color : '#ffd166';
   nm.innerHTML = '当前：<span class="dot" style="background:'+css+';color:'+css+'"></span><b>'+sc.sc.name+'时 · '+sc.sc.label+'</b>';
-  if (tg) tg.textContent = tag;
-  rg.textContent = sc.sc.range+' · '+fmtClock(sc.date)+' · '+pct+'%';
+  if (tg) tg.textContent = tag + (phaseShift > 0 ? (' · +'+phaseShift.toFixed(1)+'h') : '');
+  rg.textContent = sc.sc.range+' · 时钟 '+fmtClock(clockDate)+' · '+pct+'%';
   bar.style.width = pct+'%';
 }
 
@@ -1555,14 +1565,19 @@ const _tshichen = cb('tshichen'); if (_tshichen) _tshichen.onchange = e=>{
   const dm = cb('tdemo');
   if (!scOn){ demoOn = false; if (dm){ dm.checked = false; dm.disabled = true; } }
   else if (dm){ dm.disabled = false; }
-  updateShichenUI(shichenAt(simNow()));
+  updateShichenUI(currentShichen());
 };
 const _tdemo = cb('tdemo'); if (_tdemo) _tdemo.onchange = e=>{
   demoOn = e.target.checked; if (demoOn) resetDemoBase();
-  updateShichenUI(shichenAt(simNow()));
+  updateShichenUI(currentShichen());
 };
 const _scnowbtn = cb('scnowbtn'); if (_scnowbtn) _scnowbtn.onclick = ()=>{
-  resetDemoBase(); updateShichenUI(shichenAt(simNow()));
+  fixedMs = null; resetDemoBase(); updateShichenUI(currentShichen());
+};
+const _phase = cb('phase'); if (_phase) _phase.oninput = e=>{
+  phaseShift = +e.target.value;
+  const pv = cb('phval'); if (pv) pv.textContent = phaseShift.toFixed(1)+' h';
+  updateShichenUI(currentShichen());
 };
 const _asize = cb('asize'); if (_asize) _asize.oninput = e=>{
   const k = +e.target.value/100;
@@ -1652,7 +1667,7 @@ function animate(t){
   controls.update();
   applyLineWidth(lwValue);
   groups.labAcu.visible = labAcuOn && camera.position.distanceTo(controls.target) < 42;
-  const sc = shichenAt(simNow());
+  const sc = currentShichen();
   updateShichenUI(sc);
   groups.qi.visible = scOn;
   qiDots.forEach(d=>{
@@ -1677,6 +1692,11 @@ try{
   if (q.get('shichen')==='0'){ cb('tshichen').checked=false; scOn=false; groups.qi.visible=false; demoOn=false;
     const dm=cb('tdemo'); if(dm){ dm.checked=false; dm.disabled=true; } }
   if (q.get('demo')==='1'){ cb('tdemo').checked=true; demoOn=true; resetDemoBase(); }
+  if (q.get('phase')){ const v=+q.get('phase'); if(v>=0 && v<=6){
+    cb('phase').value=v; phaseShift=v;
+    const pv=cb('phval'); if(pv) pv.textContent=v.toFixed(1)+' h';
+  } }
+  if (q.get('ts')){ const tm=Date.parse(q.get('ts')); if(!isNaN(tm)) fixedMs=tm; }
 
   if (q.get('onlydeep')==='1'){ cb('t12').checked=false; groups.m12.visible=false; }
   if (q.get('panx')||q.get('pany')){ panBy(+(q.get('panx')||0), +(q.get('pany')||0)); }
