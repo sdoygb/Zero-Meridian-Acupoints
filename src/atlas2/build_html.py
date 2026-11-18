@@ -90,6 +90,7 @@ def main():
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
 
     html = TEMPLATE.replace('__THREE__', THREE).replace('__ORBIT__', ORBIT).replace('__DATA__', blob)
+    html = html.replace('（326 点）', f'（{data["acu_total"]} 点）')
     name = sys.argv[1] if len(sys.argv) > 1 else 'v19'
     html = html.replace('v19', name)
     if name in ('v20', 'v21'):
@@ -118,7 +119,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#070b14;color:#dfe7f3;
 canvas{display:block}
 #ui{position:fixed;top:14px;left:14px;width:272px;padding:14px 14px 10px;border-radius:14px;
   background:rgba(12,18,32,.82);border:1px solid rgba(110,160,255,.18);
-  box-shadow:0 10px 40px rgba(0,0,0,.5);backdrop-filter:blur(10px);font-size:12.5px;z-index:5}
+  box-shadow:0 10px 40px rgba(0,0,0,.5);backdrop-filter:blur(10px);font-size:12.5px;z-index:5;
+  max-height:calc(100vh - 28px);overflow:auto}
 #ui h1{margin:0 0 2px;font-size:15px;letter-spacing:.5px;font-weight:600}
 #ui .sub{color:#7f8ea8;font-size:11px;margin-bottom:10px}
 .sec{margin:9px 0 3px;color:#8aa0c4;font-size:11px;letter-spacing:1px}
@@ -128,6 +130,21 @@ label.row input{accent-color:#5aa9ff}
 input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
 .slider{margin:6px 0 2px}
 .slider span{color:#8497b5;font-size:11px}
+.scbox{margin:4px 0 2px;padding:7px 8px 6px;border-radius:9px;background:rgba(30,50,90,.30);
+  border:1px solid rgba(110,160,255,.14)}
+.scnow{font-size:12px;color:#e8f0ff;line-height:1.4}
+.scnow b{color:#ffd166;font-weight:600}
+.scnow .tag{float:right;color:#7f8ea8;font-size:10px;border:1px solid rgba(110,160,255,.2);
+  border-radius:6px;padding:0 4px;margin-left:4px}
+.scrange{color:#8aa0c4;font-size:10.5px;margin-top:2px}
+.scnote{color:#62738f;font-size:10px;margin-top:3px;line-height:1.35}
+.scprog{height:4px;background:rgba(110,160,255,.18);border-radius:3px;margin-top:6px;overflow:hidden}
+.scprog i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#5aa9ff,#ffd166);
+  border-radius:3px;transition:width .2s linear}
+.scrow{display:flex;align-items:center;gap:6px;margin-top:5px}
+.scrow button{flex:0 0 auto;padding:3px 7px;border-radius:6px;border:1px solid rgba(110,160,255,.22);
+  background:rgba(60,110,200,.14);color:#cfe0ff;font-size:10.5px;cursor:pointer}
+.scrow label{margin:0;font-size:10.5px}
 .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .btns button{flex:1 1 auto;padding:5px 6px;border-radius:8px;border:1px solid rgba(110,160,255,.25);
   background:rgba(60,110,200,.16);color:#cfe0ff;font-size:11.5px;cursor:pointer}
@@ -142,6 +159,8 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
   color:#b9c8de;line-height:1.55;z-index:5;max-height:52vh;overflow:auto;font-size:11px}
 #legend b{color:#e8f0ff;font-weight:600;display:block;margin:6px 0 2px}
 #legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.ext{display:block;box-sizing:border-box;text-align:center;color:#9ec7ff;font-size:12px;text-decoration:none;border:1px solid #2c3f5a;border-radius:8px;padding:7px 0;background:rgba(30,50,80,.25)}
+.ext:hover{background:rgba(40,70,110,.45)}
 #hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);color:#63748f;font-size:11.5px;z-index:5}
 #title{position:fixed;right:14px;bottom:12px;color:#55637a;font-size:11px;text-align:right;z-index:5}
 </style></head><body>
@@ -151,7 +170,7 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
   <div class="sub">层深定理 d*=ST+SAT+t_f/2 · 穴位=φ 极值（326 点）</div>
   <div class="sec">图层</div>
   <label class="row"><input id="t12" type="checkbox" checked> 十二正经</label>
-  <label class="row"><input id="tflow" type="checkbox" checked> 流注过渡</label>
+  <label class="row"><input id="tflow" type="checkbox" checked> 流注过渡（线）</label>
   <label class="row"><input id="tv" type="checkbox" checked> 奇经八脉</label>
   <label class="row"><input id="tc" type="checkbox" checked> 三脉七轮</label>
   <label class="row"><input id="tb" type="checkbox" checked> 人体</label>
@@ -162,6 +181,18 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
   <label class="row"><input id="tsurf" type="checkbox"> 体表投影（原 v18）</label>
   <label class="row"><input id="tacu" type="checkbox"> 推导穴位（φ 极值）</label>
   <label class="row"><input id="tacuname" type="checkbox"> 穴位名标签</label>
+  <div class="sec">十二时辰</div>
+  <label class="row"><input id="tshichen" type="checkbox" checked> 十二时辰游走（严格）</label>
+  <div class="scbox">
+    <div id="scnow" class="scnow"><span id="scname">当前：--</span><span class="tag" id="sctag">实时</span></div>
+    <div id="scrange" class="scrange">--</div>
+    <div class="scprog"><i id="scbar"></i></div>
+    <div class="scnote">每经 2 h；光点位置＝本时辰已过时间 / 2 h</div>
+    <div class="scrow">
+      <button id="scnowbtn">回到现在</button>
+      <label class="row"><input id="tdemo" type="checkbox"> 演示 ×600</label>
+    </div>
+  </div>
   <div class="slider"><span>穴位大小</span><input id="asize" type="range" min="30" max="300" value="100"></div>
   <div class="slider"><span>身体透明度</span><input id="ob" type="range" min="4" max="60" value="20"></div>
   <div class="slider"><span>线宽</span><input id="lw" type="range" min="25" max="320" value="100"></div>
@@ -176,6 +207,7 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
     <span></span><button data-pan="down" title="下移视图">▼</button><span></span>
   </div>
   <div class="btns"><button id="rot">自动旋转：关</button></div>
+  <a class="ext" style="margin-top:6px" href="https://github.com/sdoygb/Zero-Meridian-Acupoints#theory-articles" target="_blank" rel="noopener">理论文章 · Theory</a>
 </div>
 <div id="legend"></div>
 <div id="hint">拖动旋转 · 滚轮缩放 · 右键/双指/方向键/⌘+拖动平移</div>
@@ -231,7 +263,7 @@ const bodyIn = new THREE.Mesh(body.geometry, new THREE.MeshBasicMaterial({
 scene.add(bodyIn);
 
 // ---------- curves
-const groups = {m12:new THREE.Group(), flow:new THREE.Group(), ves:new THREE.Group(), cha:new THREE.Group(), lab:new THREE.Group(), deep:new THREE.Group(), thm:new THREE.Group(), vox:new THREE.Group(), surf:new THREE.Group(), acu:new THREE.Group(), labAcu:new THREE.Group()};
+const groups = {m12:new THREE.Group(), flow:new THREE.Group(), qi:new THREE.Group(), ves:new THREE.Group(), cha:new THREE.Group(), lab:new THREE.Group(), deep:new THREE.Group(), thm:new THREE.Group(), vox:new THREE.Group(), surf:new THREE.Group(), acu:new THREE.Group(), labAcu:new THREE.Group()};
 Object.values(groups).forEach(g=>scene.add(g));
 groups.thm.visible=false; groups.vox.visible=false; groups.surf.visible=false;
 const allTubes = [];
@@ -466,19 +498,90 @@ D.chakras.forEach(c=>{
   groups.lab.add(sp); labelSprites.push(sp);
 });
 
-// ---------- flowing particles
-const flowDots = [];
-const dotGeo = new THREE.SphereGeometry(0.045, 10, 10);
+// ---------- 十二时辰游走光点
+// 十二时辰经序：子胆、丑肝、寅肺、卯大肠、辰胃、巳脾、午心、未小肠、申膀胱、酉肾、戌心包、亥三焦。
+const SHICHEN = [
+  {name:'子', code:'GB', label:'胆经', range:'23:00–01:00'},
+  {name:'丑', code:'LV', label:'肝经', range:'01:00–03:00'},
+  {name:'寅', code:'LU', label:'肺经', range:'03:00–05:00'},
+  {name:'卯', code:'LI', label:'大肠经', range:'05:00–07:00'},
+  {name:'辰', code:'ST', label:'胃经', range:'07:00–09:00'},
+  {name:'巳', code:'SP', label:'脾经', range:'09:00–11:00'},
+  {name:'午', code:'HT', label:'心经', range:'11:00–13:00'},
+  {name:'未', code:'SI', label:'小肠经', range:'13:00–15:00'},
+  {name:'申', code:'BL', label:'膀胱经', range:'15:00–17:00'},
+  {name:'酉', code:'KI', label:'肾经', range:'17:00–19:00'},
+  {name:'戌', code:'PC', label:'心包经', range:'19:00–21:00'},
+  {name:'亥', code:'TE', label:'三焦经', range:'21:00–23:00'}
+];
+const codeToMer = {};
+D.meridians.forEach(m=>{ codeToMer[m.code] = m; });
+const dotGeo = new THREE.SphereGeometry(0.085, 12, 12);
+const qiDots = [];
 D.meridians.forEach(m=>{
   ['right','left'].forEach(side=>{
-    const mat = new THREE.MeshBasicMaterial({color:m.color, transparent:true, opacity:0.95,
-      blending:THREE.AdditiveBlending, depthWrite:false});
-    const dot = new THREE.Mesh(dotGeo, mat);
     const c = curve(m[side]);
-    dot.userData = {curve:c, t:Math.random(), speed:0.06+Math.random()*0.03};
-    groups.flow.add(dot); flowDots.push(dot);
+    const mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:1.0,
+      blending:THREE.AdditiveBlending, depthWrite:false});
+    const sphere = new THREE.Mesh(dotGeo, mat);
+    const halo = glowSprite(m.color, 0.60);
+    halo.material.opacity = 0.90;
+    const g = new THREE.Group();
+    g.add(sphere); g.add(halo); g.visible = false;
+    groups.qi.add(g);
+    qiDots.push({code:m.code, side, group:g, curve:c, mat, halo, color:m.color});
   });
 });
+
+// 十二时辰时钟：位置是本地时钟的纯函数，不做随机累积。
+function shichenAt(ms){
+  const d = new Date(ms);
+  const h = d.getHours() + d.getMinutes()/60 + d.getSeconds()/3600 + d.getMilliseconds()/3600000;
+  const idx = Math.floor(((h + 1) % 24) / 2) % 12;
+  const start = (2*idx - 1 + 24) % 24;
+  const elapsed = (h - start + 24) % 24;
+  const frac = Math.max(0, Math.min(1, elapsed/2));
+  return {idx, sc:SHICHEN[idx], frac, h, date:d};
+}
+let scOn = true;
+let demoOn = false;
+const DEMO_SPEED = 600;
+let demoReal0 = 0, demoSim0 = 0;
+function simNow(){
+  if (!demoOn) return Date.now();
+  return demoSim0 + (performance.now() - demoReal0) * DEMO_SPEED;
+}
+function resetDemoBase(){
+  demoReal0 = performance.now();
+  demoSim0 = Date.now();
+}
+function fmtClock(d){
+  const p = n=>String(n).padStart(2,'0');
+  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+let scLastKey = '';
+function updateShichenUI(sc){
+  const pct = Math.round(sc.frac*100);
+  const tag = demoOn ? ('演示 ×'+DEMO_SPEED) : '实时';
+  const key = sc.sc.name+'|'+pct+'|'+tag+'|'+scOn+'|'+fmtClock(sc.date);
+  if (key === scLastKey) return;
+  scLastKey = key;
+  const nm = document.getElementById('scname');
+  const rg = document.getElementById('scrange');
+  const bar = document.getElementById('scbar');
+  const tg = document.getElementById('sctag');
+  if (!scOn){
+    nm.innerHTML = '当前：<b>十二时辰已关闭</b>';
+    rg.textContent = '光点隐藏'; bar.style.width = '0%'; if (tg) tg.textContent = '';
+    return;
+  }
+  const m = codeToMer[sc.sc.code];
+  const css = m ? m.color : '#ffd166';
+  nm.innerHTML = '当前：<span class="dot" style="background:'+css+';color:'+css+'"></span><b>'+sc.sc.name+'时 · '+sc.sc.label+'</b>';
+  if (tg) tg.textContent = tag;
+  rg.textContent = sc.sc.range+' · '+fmtClock(sc.date)+' · '+pct+'%';
+  bar.style.width = pct+'%';
+}
 
 // ---------- UI
 const legend = document.getElementById('legend');
@@ -508,6 +611,18 @@ const _tsurf = cb('tsurf'); if (_tsurf) _tsurf.onchange = e=>{groups.surf.visibl
 const _tacu = cb('tacu'); if (_tacu) _tacu.onchange = e=>{groups.acu.visible=e.target.checked;};
 let labAcuOn = false;
 const _tacuname = cb('tacuname'); if (_tacuname) _tacuname.onchange = e=>{labAcuOn = e.target.checked;};
+const _tshichen = cb('tshichen'); if (_tshichen) _tshichen.onchange = e=>{
+  scOn = e.target.checked; groups.qi.visible = scOn;
+  const dm = cb('tdemo'); if (dm) dm.disabled = !scOn;
+  updateShichenUI(shichenAt(simNow()));
+};
+const _tdemo = cb('tdemo'); if (_tdemo) _tdemo.onchange = e=>{
+  demoOn = e.target.checked; if (demoOn) resetDemoBase();
+  updateShichenUI(shichenAt(simNow()));
+};
+const _scnowbtn = cb('scnowbtn'); if (_scnowbtn) _scnowbtn.onclick = ()=>{
+  resetDemoBase(); updateShichenUI(shichenAt(simNow()));
+};
 const _asize = cb('asize'); if (_asize) _asize.oninput = e=>{
   const k = +e.target.value/100;
   acuMeshes.forEach(m=>m.scale.setScalar(k));
@@ -596,13 +711,17 @@ function animate(t){
   controls.update();
   applyLineWidth(lwValue);
   groups.labAcu.visible = labAcuOn && camera.position.distanceTo(controls.target) < 42;
-  flowDots.forEach(d=>{
-    d.userData.t = ((d.userData.t + dt*d.userData.speed) % 1 + 1) % 1;
-    const p = d.userData.curve.getPointAt(d.userData.t);
-    d.position.copy(p);
-    const s = 0.7 + 0.4*Math.sin(t/220 + d.userData.t*20);
-    d.scale.setScalar(s);
-    d.material.opacity = groups.flow.visible ? 0.95 : 0;
+  const sc = shichenAt(simNow());
+  updateShichenUI(sc);
+  groups.qi.visible = scOn;
+  qiDots.forEach(d=>{
+    const on = scOn && d.code === sc.sc.code;
+    d.group.visible = on;
+    if (on){
+      d.group.position.copy(d.curve.getPointAt(sc.frac));
+      const s = 0.88 + 0.12*Math.sin(t/260);
+      d.group.scale.setScalar(s);
+    }
   });
   body.material.opacity = groups.m12.visible ? body.material.opacity : body.material.opacity;
   chakraMats.forEach((m,i)=>{ m.opacity = 0.72 + 0.26*Math.sin(t/650 + i); });
@@ -614,6 +733,8 @@ try{
   const q = new URLSearchParams(location.search||'');
   if (q.get('lw')){ const v = +q.get('lw'); cb('lw').value = v; applyLineWidth(v); }
   if (q.get('rotate')==='1'){ autoRot = true; cb('rot').textContent='自动旋转：开'; }
+  if (q.get('shichen')==='0'){ cb('tshichen').checked=false; scOn=false; groups.qi.visible=false; }
+  if (q.get('demo')==='1'){ cb('tdemo').checked=true; demoOn=true; resetDemoBase(); }
 
   if (q.get('onlydeep')==='1'){ cb('t12').checked=false; groups.m12.visible=false; }
   if (q.get('panx')||q.get('pany')){ panBy(+(q.get('panx')||0), +(q.get('pany')||0)); }
@@ -629,7 +750,9 @@ try{
     if (H.includes('m12')){ groups.m12.visible=false; cb('t12').checked=false; }
     if (H.includes('ves')){ groups.ves.visible=false; cb('tv').checked=false; }
     if (H.includes('cha')){ groups.cha.visible=false; cb('tc').checked=false; }
-    if (H.includes('flow')){ groups.flow.visible=false; cb('tflow').checked=false; }
+    if (H.includes('flow')){ groups.flow.visible=false; groups.qi.visible=false; cb('tflow').checked=false;
+      if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; }
+    if (H.includes('qi')){ groups.qi.visible=false; if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; }
     if (H.includes('body')){ body.visible=false; bodyIn.visible=false; cb('tb').checked=false; }
     if (H.includes('deep')){ groups.deep.visible=false; if(cb('tdeep')) cb('tdeep').checked=false; }
   }
