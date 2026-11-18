@@ -6,7 +6,7 @@ A 3D meridian and acupoint atlas **computed from the Zero framework** on a neutr
 
 ![Atlas front view](data/atlas2/zero_atlas_v21_front.png)
 
-The page is a single self-contained HTML file (`index.html`, ~1.9 MB, no network needed). Drag to rotate, scroll to zoom, right-drag to pan; the left panel toggles layers.
+The page is a single self-contained HTML file (`index.html`, ~2 MB, no network needed). Drag to rotate, scroll to zoom, right-drag to pan; the left panel toggles layers.
 
 The left panel includes a **十二时辰** switch: the active meridian's two glowing dots move from its start to its end over its 2-hour window, with a live 时辰 / clock / progress display (real time; optional 600× demo). A **作息相位 δ** slider (0–6 h) shifts the natural 酉 anchor: 0 = natural light (酉 17–19), 3–6 h = modern schedule (酉 20–01); at δ=4.5 the clock 22:30 shows the biological 酉/kidney dot.
 
@@ -75,8 +75,8 @@ Zc011–Zc015*.md             # theory articles
 
 ```bash
 pip install numpy scipy matplotlib
-python3 src/atlas2/build_html.py v21     # writes data/atlas2/zero_atlas_v21.html
 python3 src/zc021/export_web.py         # joint H/V dynamics for the right panel
+python3 src/atlas2/build_html.py v21     # writes data/atlas2/zero_atlas_v21.html
 python3 src/zc014/phi_fields.py          # φ fields (port harmonic + bone distance)
 python3 src/zc014/derive_points.py       # 319 acupoints
 ```
