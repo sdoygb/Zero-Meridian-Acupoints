@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pyvista as pv
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import dijkstra, connected_components
 from scipy.spatial import cKDTree
@@ -32,7 +33,7 @@ VIA_TARGET = {
 
 def main():
     by = CI.load_map()
-    V = load_obj(ROOT / "data" / "model" / "human_neutral_makehuman.obj")[0]
+    V, F = load_obj(ROOT / "data" / "model" / "human_neutral_makehuman.obj")
     B = CI.points_for(by, CI.BONES)
     O = CI.points_for(by, CI.ORGANS)
     A = np.vstack([B, O])
@@ -53,6 +54,30 @@ def main():
         return P[rng.choice(len(P), min(n, len(P)), replace=False)]
 
     heart = sub(heart, 4000); llung = sub(llung, 4000); rlung = sub(rlung, 4000)
+    faces = np.hstack([np.full((len(F), 1), 3), F]).astype(np.int64).ravel()
+    body = pv.PolyData(V, faces)
+
+    def inside_mask(P):
+        pd = pv.PolyData(np.asarray(P, float))
+        out = pd.select_interior_points(surface=body, check_surface=False)
+        return out.point_data["selected_points"].astype(bool)
+
+    def fix_inside(P, name):
+        center = P.mean(0)
+        Q = P.copy()
+        n0 = int((~inside_mask(Q)).sum())
+        for _ in range(14):
+            out = ~inside_mask(Q)
+            if not out.any():
+                break
+            Q[out] = 0.5 * (Q[out] + center)
+        n1 = int((~inside_mask(Q)).sum())
+        print(f"  {name}: outside {n0} -> {n1}")
+        return Q
+
+    heart = fix_inside(heart, "heart")
+    llung = fix_inside(llung, "left lung")
+    rlung = fix_inside(rlung, "right lung")
     P = np.vstack([heart, llung, rlung])
     label = np.r_[np.zeros(len(heart), int), np.ones(len(llung), int), 2 * np.ones(len(rlung), int)]
     print("surface points", len(P), "heart/lungL/lungR", len(heart), len(llung), len(rlung))
