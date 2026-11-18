@@ -10,6 +10,8 @@ The page is a single self-contained HTML file (`index.html`, ~2 MB, no network n
 
 The left panel includes a **十二时辰** switch: the active meridian's two glowing dots move from its start to its end over its 2-hour window, with a live 时辰 / clock / progress display (real time; optional 600× demo). A **作息相位 δ** slider (0–6 h) shifts the natural 酉 anchor: 0 = natural light (酉 17–19), 3–6 h = modern schedule (酉 20–01); at δ=4.5 the clock 22:30 shows the biological 酉/kidney dot.
 
+The transition layer now shows **12/12** computed handoffs: 8 surface handoffs, the BL→KI surface shortest path, and three deep handoffs on lung/heart surfaces (pleura/pericardium proxies) instead of straight chords. The left panel labels the layer “流注过渡（12/12）”.
+
 The right panel adds a **动力学 · 调济/互补** view: H (12 meridians + 8 extraordinary vessels) and V (left/center/right + 7 chakras) are coupled by a 7-level interface. Choose symmetric vs asymmetric seam, one of four perturbations, and g⊥ (0–10); the panel shows cross/within, zero-sum error, and the top-5 responders. Red/blue = sign of the response; the glowing interface threads are the seam; source/sink markers show the perturbation.
 
 ## What it shows
@@ -17,7 +19,7 @@ The right panel adds a **动力学 · 调济/互补** view: H (12 meridians + 8 
 | Layer | Content |
 |:--|:--|
 | 12 primary meridians | port-to-port surface geodesics, then lowered to the computed channel depth |
-| 流注 transitions | 8 limb/head transitions + 3 deep transitions, at the same depth |
+| 流注 transitions | 12/12: 8 surface handoffs + BL→KI + 3 organ-surface (pleura/pericardium proxy) deep bridges; computed paths |
 | 十二时辰 | strict 2 h per meridian (子胆 … 亥三焦); one active meridian pair; live clock in the side panel |
 | 作息相位 δ | 0–6 h phase-anchor shift; 0 = natural light, 3–6 h = modern schedule; δ=4.5 puts 酉 at 22:30 |
 | 动力学调济 | H(12+8) ↔ V(3+7); symmetric/asymmetric seam; g⊥; cross/within; zero-sum; top-5 responders |
@@ -63,11 +65,13 @@ data/zc013/                 # layer measurements (ST/SAT/t_f), audit outputs
 data/zc014/                 # field φ, derived acupoints, naming, comparison
 data/zc015/                 # WHO landmark anchors, TARA coordinates, depth anchors
 data/zc021/                 # joint H/V dynamics (web_dynamics.json)
+data/zc022/                 # transition audit + organ-surface deep paths
 src/atlas2/                 # mesh loading, surface routing, stage 1–5, HTML builder
 src/zc013/                  # layer model, theorem application, audit
 src/zc014/                  # φ fields, extremum extraction, naming
 src/zc015/                  # anchor construction, TARA extraction, registration
 src/zc021/                  # joint H/V dynamics + web export
+src/zc022/                  # transition audit, deep paths, 12/12 assembly
 Zc011–Zc015*.md             # theory articles
 ```
 
@@ -76,6 +80,7 @@ Zc011–Zc015*.md             # theory articles
 ```bash
 pip install numpy scipy matplotlib
 python3 src/zc021/export_web.py         # joint H/V dynamics for the right panel
+python3 src/zc022/assemble_transitions.py  # 12/12 transition data
 python3 src/atlas2/build_html.py v21     # writes data/atlas2/zero_atlas_v21.html
 python3 src/zc014/phi_fields.py          # φ fields (port harmonic + bone distance)
 python3 src/zc014/derive_points.py       # 319 acupoints

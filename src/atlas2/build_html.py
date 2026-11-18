@@ -14,6 +14,11 @@ from core import ROOT, load_obj
 
 OUT = ROOT / 'data' / 'atlas2'
 D12 = json.load(open(OUT / 'paths12.json'))
+try:
+    _TRANS = json.load(open(OUT / 'transitions_updated.json'))
+    D12['transitions'] = _TRANS['transitions']
+except Exception:
+    pass
 D3 = json.load(open(OUT / 'vessels_channels.json'))
 S1 = json.load(open(OUT / 'stage1.json'))
 D5 = json.load(open(OUT / 'depth_paths.json'))
@@ -63,7 +68,7 @@ def main():
     trans = []
     for t in D12['transitions']:
         key = t['a'] + '-' + t['b']
-        if use_thm_tr and key in THM.get('transitions', {}):
+        if use_thm_tr and key in THM.get('transitions', {}) and not t.get('computed'):
             tr = THM['transitions'][key]
             trans.append({'a': t['a'], 'b': t['b'], 'kind': t['kind'],
                           'right': rl(tr['right']), 'left': rl(tr['left'])})
@@ -192,7 +197,7 @@ input[type=range]{width:100%;accent-color:#5aa9ff;height:16px}
   <div class="sub">层深定理 d*=ST+SAT+t_f/2 · 穴位=φ 极值（326 点）</div>
   <div class="sec">图层</div>
   <label class="row"><input id="t12" type="checkbox" checked> 十二正经</label>
-  <label class="row"><input id="tflow" type="checkbox" checked> 流注过渡（线）</label>
+  <label class="row"><input id="tflow" type="checkbox" checked> 流注过渡（12/12）</label>
   <label class="row"><input id="tv" type="checkbox" checked> 奇经八脉</label>
   <label class="row"><input id="tc" type="checkbox" checked> 三脉七轮</label>
   <label class="row"><input id="tb" type="checkbox" checked> 人体</label>
@@ -453,8 +458,10 @@ D.meridians.forEach(m=>{
 // 流注过渡
 D.transitions.forEach(t=>{
   const col = t.kind==='deep' ? 0x6f7f96 : 0x8090a8;
+  const rr = t.kind==='deep' ? 0.020 : 0.013;
+  const op = t.kind==='deep' ? 0.90 : 0.75;
   ['right','left'].forEach(side=>{
-    addCurve(t[side], col, 0.013, {group:groups.flow, glow:0.25, opacity:0.75, halo:false});
+    addCurve(t[side], col, rr, {group:groups.flow, glow:0.25, opacity:op, halo:false});
   });
 });
 // 奇经八脉
@@ -873,6 +880,7 @@ function buildLegend(){
   h += '<b>三脉七轮</b>';
   D.channels.forEach(c=>{h+=`<div><i style="background:${c.color};color:${c.color}"></i>${c.name}</div>`;});
   D.chakras.forEach(c=>{h+=`<div><i style="background:#ffd166;color:#ffd166"></i>${c.name}</div>`;});
+  h += '<b>流注过渡</b><div><i style="background:#8090a8;color:#8090a8"></i>12/12：9 体表 + 3 深部（肺/心表面）</div>';
   legend.innerHTML = h;
 }
 buildLegend();
