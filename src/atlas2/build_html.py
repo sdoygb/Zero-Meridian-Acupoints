@@ -613,7 +613,9 @@ let labAcuOn = false;
 const _tacuname = cb('tacuname'); if (_tacuname) _tacuname.onchange = e=>{labAcuOn = e.target.checked;};
 const _tshichen = cb('tshichen'); if (_tshichen) _tshichen.onchange = e=>{
   scOn = e.target.checked; groups.qi.visible = scOn;
-  const dm = cb('tdemo'); if (dm) dm.disabled = !scOn;
+  const dm = cb('tdemo');
+  if (!scOn){ demoOn = false; if (dm){ dm.checked = false; dm.disabled = true; } }
+  else if (dm){ dm.disabled = false; }
   updateShichenUI(shichenAt(simNow()));
 };
 const _tdemo = cb('tdemo'); if (_tdemo) _tdemo.onchange = e=>{
@@ -733,7 +735,8 @@ try{
   const q = new URLSearchParams(location.search||'');
   if (q.get('lw')){ const v = +q.get('lw'); cb('lw').value = v; applyLineWidth(v); }
   if (q.get('rotate')==='1'){ autoRot = true; cb('rot').textContent='自动旋转：开'; }
-  if (q.get('shichen')==='0'){ cb('tshichen').checked=false; scOn=false; groups.qi.visible=false; }
+  if (q.get('shichen')==='0'){ cb('tshichen').checked=false; scOn=false; groups.qi.visible=false; demoOn=false;
+    const dm=cb('tdemo'); if(dm){ dm.checked=false; dm.disabled=true; } }
   if (q.get('demo')==='1'){ cb('tdemo').checked=true; demoOn=true; resetDemoBase(); }
 
   if (q.get('onlydeep')==='1'){ cb('t12').checked=false; groups.m12.visible=false; }
@@ -751,8 +754,10 @@ try{
     if (H.includes('ves')){ groups.ves.visible=false; cb('tv').checked=false; }
     if (H.includes('cha')){ groups.cha.visible=false; cb('tc').checked=false; }
     if (H.includes('flow')){ groups.flow.visible=false; groups.qi.visible=false; cb('tflow').checked=false;
-      if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; }
-    if (H.includes('qi')){ groups.qi.visible=false; if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; }
+      if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; demoOn=false;
+      const dm=cb('tdemo'); if(dm){ dm.checked=false; dm.disabled=true; } }
+    if (H.includes('qi')){ groups.qi.visible=false; if(cb('tshichen')) cb('tshichen').checked=false; scOn=false; demoOn=false;
+      const dm=cb('tdemo'); if(dm){ dm.checked=false; dm.disabled=true; } }
     if (H.includes('body')){ body.visible=false; bodyIn.visible=false; cb('tb').checked=false; }
     if (H.includes('deep')){ groups.deep.visible=false; if(cb('tdeep')) cb('tdeep').checked=false; }
   }
